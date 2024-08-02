@@ -13,3 +13,8 @@ plotly
 plotly
 catboost
 joblib
+spacy
+nltk
+torch
+tqdm
+transformers
