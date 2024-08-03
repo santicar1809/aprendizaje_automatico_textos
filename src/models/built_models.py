@@ -44,6 +44,7 @@ def iterative_modeling(data):
 
     results = []
 
+
     # Iterating the models
     models_name = ['dummie','cat','lgbm','lr','xg','rf']
     for model,i in zip(models,models_name):
@@ -54,13 +55,12 @@ def iterative_modeling(data):
     results_df = pd.DataFrame(results, columns=['model','best_estimator','best_train_score','validation_score'])
     
     bert_results = bert_model(data) 
-    #joblib.dump(tf_results[1],output_path +f'best_random_nn.joblib')
-    bert_results[1].save(output_path+'best_random_nn.h5')
+    joblib.dump(bert_results[1],output_path +f'best_random_bert.joblib')
     # Concatening logistic models and neuronal network
     final_rev = pd.concat([results_df,bert_results[0]])
     final_rev.to_csv('./files/modeling_output/model_report.csv',index=False)
 
-    return final_rev[['model','validation_score']]
+    return results_df[['model','validation_score']]
 
 
 def model_structure(data, pipeline, param_grid):
@@ -84,7 +84,7 @@ def model_structure(data, pipeline, param_grid):
     # Scores
     best_score = gs.best_score_
     best_estimator = gs.best_estimator_
-    score_val = eval_model(best_estimator,features_test,target_test)
+    score_val = eval_model(best_estimator,features_train, target_train, features_test, target_test)
     print(f'AU-ROC: {score_val}')
     results = best_estimator, best_score, score_val 
     return results
@@ -225,7 +225,7 @@ def BERT_text_to_embeddings(texts, max_length=512, batch_size=100, force_device=
 
 def bert_model(data):
     seed=12345
-    features_new=data['review_norm'].apply(clear_text).sample(200,random_state=seed)
+    features_new=data['review_norm'].apply(clear_text)
     target_new=data.loc[features_new.index,'pos']
     
     features_new = features_new.reset_index(drop=True)

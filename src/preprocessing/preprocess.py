@@ -47,7 +47,7 @@ def preprocess_data(data):
         os.makedirs(path)
 
     data.to_csv(path+'preprocessed_data.csv', index=False)
-
+    
     print(f'Dataframe created at route: {path}preprocessed_data.csv ')
 
     return data

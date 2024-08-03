@@ -1,3 +1,4 @@
+import numpy as np
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.pipeline import Pipeline
@@ -16,6 +17,10 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.base import BaseEstimator, TransformerMixin
+import transformers
+import torch
+import math
+from tqdm.auto import tqdm
 
 class NLTKTokenizer(BaseEstimator, TransformerMixin):
     def __init__(self):
@@ -31,21 +36,12 @@ class NLTKTokenizer(BaseEstimator, TransformerMixin):
         tokens = word_tokenize(text)
         lemmas = [self.lemmatizer.lemmatize(token) for token in tokens]
         return lemmas
-
-class SpacyTokenizer(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        self.nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
     
-    def fit(self,X,y=None):
-        return self
-    
-    def transform(self,X,y=None):
-        return [' '.join(self._lemmatize(doc)) for doc in X]
-    
-    def _lemmatize(self,text):
-        doc=self.nlp(text)
-        lemmas=[token.lemma_ for token in doc]
-        return lemmas
+def spacy_lemma(data):
+    nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
+    doc=nlp(data)
+    lemmas=[token.lemma_ for token in doc]
+    return " ".join(lemmas)
 
 ## Logistic Regression Model
 def all_models():
@@ -79,9 +75,8 @@ def all_models():
     cat = ['cat',cat_pipeline,cat_param_grid]
     
     lgbm_pipeline = Pipeline([
-        ('spacy',SpacyTokenizer()),
-        ('TF', TfidfVectorizer(stop_words=list(nltk_stopwords.words('english')))),
-        ('lbgm',LGBMClassifier())
+        ('TF', TfidfVectorizer(tokenizer=spacy_lemma)),
+        ('lightgbm',LGBMClassifier())
     ])
     
     lgbm_param_grid = {
@@ -108,7 +103,7 @@ def all_models():
     lr = ['logreg',lr_pipeline,lr_param_grid]
     
     xg_pipeline=Pipeline([
-        ('NLKT',NLTKTokenizer())
+        ('NLKT',NLTKTokenizer()),
         ('TF', TfidfVectorizer(stop_words=list(nltk_stopwords.words('english')))),
         ('xgboost',XGBClassifier(random_state=1234))
     ])
@@ -119,7 +114,7 @@ def all_models():
         'xgboost__n_estimators': [100, 500, 1000]  # Número de árboles en el bosque
     }
 
-    xg = ['XGboost',xg_pipeline,xg_param_grid]
+    xg = ['xgboost',xg_pipeline,xg_param_grid]
     
     rf_pipeline = Pipeline([
     ('NLKT',NLTKTokenizer()),
@@ -135,9 +130,7 @@ def all_models():
     }
 
     # Evaluar el modelo con la función model_evaluation
-    rf = ['Random_Forest',rf_pipeline,rf_param_grid]
-    
+    rf = ['random_forest',rf_pipeline,rf_param_grid]
     
     models = [dummie,cat,lgbm,lr,xg,rf] #Activate to run all the models
-    
     return models
