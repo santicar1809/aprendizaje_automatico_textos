@@ -133,4 +133,5 @@ def all_models():
     rf = ['random_forest',rf_pipeline,rf_param_grid]
     
     models = [dummie,cat,lgbm,lr,xg,rf] #Activate to run all the models
+    #models = [dummie,cat] #Activate to run all the models
     return models

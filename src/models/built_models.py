@@ -48,7 +48,12 @@ def iterative_modeling(data):
     # Iterating the models
     models_name = ['dummie','cat','lgbm','lr','xg','rf']
     for model,i in zip(models,models_name):
-        best_estimator, best_score, val_score = model_structure(data, model[1], model[2]) #data, pipeline, param_grid
+        results_cons=model_structure(data, model[1], model[2])
+        best_estimator=results_cons[0]
+        best_score=results_cons[1]
+        val_score = results_cons[2] #data, pipeline, param_grid
+        results_cons[3].savefig(f'./files/modeling_output/figures/fig_{i}.png')
+        results_cons[4].to_csv(f'./files/modeling_output/reports/results_{i}.csv')
         results.append([model[0],best_estimator,best_score, val_score])
         
         joblib.dump(best_estimator,output_path +f'best_random_{i}.joblib')
@@ -58,7 +63,7 @@ def iterative_modeling(data):
     joblib.dump(bert_results[1],output_path +f'best_random_bert.joblib')
     # Concatening logistic models and neuronal network
     final_rev = pd.concat([results_df,bert_results[0]])
-    final_rev.to_csv('./files/modeling_output/model_report.csv',index=False)
+    final_rev.to_csv('./files/modeling_output/reports/model_report.csv',index=False)
 
     return results_df[['model','validation_score']]
 
@@ -84,10 +89,13 @@ def model_structure(data, pipeline, param_grid):
     # Scores
     best_score = gs.best_score_
     best_estimator = gs.best_estimator_
-    score_val = eval_model(best_estimator,features_train, target_train, features_test, target_test)
+    prob = best_estimator.predict_proba(features_test)[:, 1]
+    score_val = roc_auc_score(target_test,prob)
+    fig=eval_model(best_estimator,features_train, target_train, features_test, target_test)[0]
+    df=eval_model(best_estimator,features_train, target_train, features_test, target_test)[1]
     print(f'AU-ROC: {score_val}')
-    results = best_estimator, best_score, score_val 
-    return results
+     
+    return best_estimator, best_score, score_val,fig,df
     
 def eval_model(model, train_features, train_target, test_features, test_target):
 
@@ -178,7 +186,7 @@ def eval_model(model, train_features, train_target, test_features, test_target):
 
     print(df_eval_stats)
 
-    return
+    return fig,df_eval_stats
 ## Network Model Structure
 
 def BERT_text_to_embeddings(texts, max_length=512, batch_size=100, force_device=None, disable_progress_bar=False):
