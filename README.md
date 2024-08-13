@@ -12,7 +12,7 @@ Film Junky Union, una nueva comunidad vanguardista para los aficionados de las p
 6. Prueba los modelos para el conjunto de datos de prueba.
 7. Escribe algunas reseñas y clasifícalas con todos los modelos.
 8. Busca las diferencias entre los resultados de las pruebas de los modelos en los dos puntos anteriores. Intenta explicarlas.
-8. Muestra tus hallazgos.
+9. Muestra tus hallazgos.
 
 ¡Importante! Para tu comodidad, la plantilla del proyecto ya contiene algunos fragmentos de código, así que puedes usarlos si lo deseas. Si deseas hacer borrón y cuenta nueva, simplemente elimina todos esos fragmentos de código. Aquí está la lista de fragmentos de código:
 
